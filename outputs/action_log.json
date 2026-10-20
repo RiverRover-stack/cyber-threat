@@ -1,0 +1,86 @@
+[
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "block_ip",
+    "target": "203.0.113.45",
+    "reason": "Block the offending source IP at the perimeter firewall.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "disable_account",
+    "target": "alice",
+    "reason": "If a login succeeded, disable the affected account and terminate its active sessions.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "block_ip",
+    "target": "198.51.100.77",
+    "reason": "Block the scanning source IP at the firewall.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "block_ip",
+    "target": "203.0.113.99",
+    "reason": "Block the attacking IP on the web application firewall.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "isolate_host",
+    "target": "10.0.5.23",
+    "reason": "Isolate the infected host from the network immediately.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "block_ip",
+    "target": "185.220.101.7",
+    "reason": "Block the C2 IP address and domain at the firewall and DNS.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "block_ip",
+    "target": "45.133.1.88",
+    "reason": "Block the destination IP and isolate the source host.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "isolate_host",
+    "target": "10.0.3.40",
+    "reason": "Block the destination IP and isolate the source host.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "disable_account",
+    "target": "bob",
+    "reason": "Disable the user account and kill its sessions.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "isolate_host",
+    "target": "10.0.5.14",
+    "reason": "Isolate the host if root compromise is suspected.",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "create_ticket",
+    "target": "10.0.5.20",
+    "reason": "Low-confidence anomaly flagged for analyst review",
+    "mode": "SIMULATED"
+  },
+  {
+    "time": "2026-10-20T04:40:41",
+    "action": "create_ticket",
+    "target": "10.0.5.24",
+    "reason": "Low-confidence anomaly flagged for analyst review",
+    "mode": "SIMULATED"
+  }
+]

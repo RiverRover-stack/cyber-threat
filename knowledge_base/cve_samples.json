@@ -1,0 +1,32 @@
+[
+  {
+    "id": "CVE-2021-41773",
+    "description": "Apache HTTP Server 2.4.49 path traversal allowing file disclosure and remote code execution.",
+    "mitre_id": "T1190",
+    "remediation": "Upgrade Apache to 2.4.51 or later."
+  },
+  {
+    "id": "CVE-2018-15473",
+    "description": "OpenSSH username enumeration through timing differences, aiding SSH brute force attacks.",
+    "mitre_id": "T1110",
+    "remediation": "Upgrade OpenSSH and enforce key-based authentication."
+  },
+  {
+    "id": "CVE-2021-3156",
+    "description": "Sudo heap-based buffer overflow (Baron Samedit) enabling local privilege escalation to root.",
+    "mitre_id": "T1548",
+    "remediation": "Upgrade sudo to 1.9.5p2 or later."
+  },
+  {
+    "id": "CVE-2019-11043",
+    "description": "PHP-FPM remote code execution under certain nginx configurations.",
+    "mitre_id": "T1190",
+    "remediation": "Update PHP-FPM and fix nginx fastcgi configuration."
+  },
+  {
+    "id": "CVE-2022-22965",
+    "description": "Spring4Shell remote code execution in Spring Framework via data binding.",
+    "mitre_id": "T1190",
+    "remediation": "Upgrade Spring Framework to 5.3.18 or later."
+  }
+]

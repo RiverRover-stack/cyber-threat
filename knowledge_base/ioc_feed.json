@@ -1,0 +1,7 @@
+[
+ {"ip":"185.220.101.7","type":"c2_server","confidence":"high","note":"Known botnet C2 / Tor exit node"},
+ {"ip":"45.133.1.88","type":"exfil_destination","confidence":"high","note":"Bulletproof hosting used for data staging"},
+ {"ip":"203.0.113.45","type":"brute_forcer","confidence":"medium","note":"Reported for SSH credential stuffing"},
+ {"ip":"198.51.100.77","type":"scanner","confidence":"medium","note":"Mass internet scanner"},
+ {"ip":"203.0.113.99","type":"web_attacker","confidence":"medium","note":"Automated SQLi tooling"}
+]

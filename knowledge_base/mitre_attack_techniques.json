@@ -1,0 +1,72 @@
+[
+  {
+    "id": "T1110",
+    "name": "Brute Force",
+    "tactic": "Credential Access",
+    "description": "Adversaries guess passwords or use credential lists to gain access to accounts. Repeated failed SSH or RDP logins from a single source across many usernames, sometimes followed by a successful login, are typical indicators.",
+    "mitigation": "Enforce account lockout and rate limiting, use multi-factor authentication, disable password SSH in favour of keys, deploy fail2ban."
+  },
+  {
+    "id": "T1046",
+    "name": "Network Service Discovery",
+    "tactic": "Discovery",
+    "description": "Adversaries scan hosts for open ports and listening services to find targets. Many connection attempts to sequential or random ports from one IP, mostly denied by the firewall, indicate a port scan.",
+    "mitigation": "Restrict network exposure, segment networks, block scanning sources, enable IDS scan detection."
+  },
+  {
+    "id": "T1190",
+    "name": "Exploit Public-Facing Application",
+    "tactic": "Initial Access",
+    "description": "Adversaries exploit weaknesses in internet-facing applications such as SQL injection, where malicious SQL like UNION SELECT, OR 1=1 or DROP TABLE is inserted in request parameters to read or modify the database.",
+    "mitigation": "Use parameterised queries, input validation, a web application firewall, patch applications and apply least-privilege database accounts."
+  },
+  {
+    "id": "T1071",
+    "name": "Application Layer Protocol",
+    "tactic": "Command and Control",
+    "description": "Adversaries communicate with compromised systems over common protocols to blend with normal traffic. Beaconing is periodic, near-constant-interval, small outbound connections to an external command-and-control server.",
+    "mitigation": "Block known C2 infrastructure, use egress filtering and DNS/proxy inspection, detect periodic beaconing, isolate infected hosts."
+  },
+  {
+    "id": "T1041",
+    "name": "Exfiltration Over C2 Channel",
+    "tactic": "Exfiltration",
+    "description": "Adversaries steal data by sending it over an existing command-and-control channel. Unusually large outbound transfers to a rare external destination indicate data exfiltration.",
+    "mitigation": "Apply data loss prevention, egress traffic limits and monitoring, block the destination, isolate the source host and preserve evidence."
+  },
+  {
+    "id": "T1548",
+    "name": "Abuse Elevation Control Mechanism",
+    "tactic": "Privilege Escalation",
+    "description": "Adversaries circumvent elevation controls to gain higher privileges, for example setting the setuid bit with chmod u+s, editing /etc/sudoers with NOPASSWD, or adding a user to the sudo group.",
+    "mitigation": "Audit sudoers, monitor setuid changes, enforce least privilege, require re-authentication for sudo and alert on privilege changes."
+  },
+  {
+    "id": "T1078",
+    "name": "Valid Accounts",
+    "tactic": "Initial Access",
+    "description": "Adversaries obtain and use legitimate credentials. A successful login after many failures or logins from unusual locations can indicate compromised valid accounts.",
+    "mitigation": "Rotate credentials, enforce MFA, review account activity and disable compromised accounts."
+  },
+  {
+    "id": "T1595",
+    "name": "Active Scanning",
+    "tactic": "Reconnaissance",
+    "description": "Adversaries probe victim infrastructure to gather information. Statistically anomalous, high-volume traffic from a single source may indicate reconnaissance.",
+    "mitigation": "Rate-limit and block abusive sources, monitor for anomalies and review exposed services."
+  },
+  {
+    "id": "T1059",
+    "name": "Command and Scripting Interpreter",
+    "tactic": "Execution",
+    "description": "Adversaries abuse shells and scripting interpreters such as bash or PowerShell to execute commands.",
+    "mitigation": "Restrict interpreters, enable command-line auditing and application allow-listing."
+  },
+  {
+    "id": "T1486",
+    "name": "Data Encrypted for Impact",
+    "tactic": "Impact",
+    "description": "Adversaries encrypt data to interrupt availability, typically ransomware, with mass file modification and ransom notes.",
+    "mitigation": "Maintain offline backups, segment networks, use EDR and isolate affected hosts."
+  }
+]

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+.ipynb_checkpoints/
+.pytest_cache/
+chroma_db/
+outputs/*
+!outputs/.gitkeep
+*.egg-info/
