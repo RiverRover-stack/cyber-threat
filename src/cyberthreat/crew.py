@@ -115,6 +115,20 @@ def build_crew(llm=None):
                 max_rpm=20, verbose=False)
 
 
+def _kickoff(crew):
+    """Run ``crew.kickoff()``; inside Jupyter/Colab (running event loop) use a worker thread, as CrewAI
+    refuses synchronous agent execution on a thread that already has an event loop."""
+    import asyncio
+    import concurrent.futures
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return crew.kickoff()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        return pool.submit(crew.kickoff).result()
+
+
 def run_pipeline(provider: str | None = None) -> dict:
     """Run the full system. Uses the CrewAI crew when an API key is configured, otherwise offline mode.
 
@@ -129,7 +143,7 @@ def run_pipeline(provider: str | None = None) -> dict:
         return run_offline()
     print(f"[mode] CrewAI multi-agent crew using {settings.model}")
     try:
-        out = build_crew(build_llm(settings)).kickoff()
+        out = _kickoff(build_crew(build_llm(settings)))
     except Exception as exc:  # noqa: BLE001 - any LLM/provider failure should degrade gracefully
         print(f"[warning] Live crew failed: {type(exc).__name__}: {str(exc)[:300]}")
         print("[warning] Hint: the model may not support tool calling or you hit a rate limit "

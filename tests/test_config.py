@@ -58,3 +58,21 @@ def test_live_crew_failure_falls_back_offline(monkeypatch):
     monkeypatch.setattr(crew, "build_crew", lambda llm: (_ for _ in ()).throw(RuntimeError("tool calling unsupported")))
     result = crew.run_pipeline()
     assert "# Security Incident Report" in result["report"]
+
+
+def test_kickoff_works_inside_running_event_loop():
+    """Jupyter/Colab run cells inside an event loop; CrewAI rejects sync execution there."""
+    import asyncio
+
+    class FakeCrew:
+        def kickoff(self):
+            try:
+                asyncio.get_running_loop()
+            except RuntimeError:
+                return "ok"
+            raise RuntimeError("invoked synchronously from within a running event loop")
+
+    async def main():
+        return crew._kickoff(FakeCrew())
+
+    assert asyncio.run(main()) == "ok"
