@@ -116,12 +116,24 @@ def build_crew(llm=None):
 
 
 def run_pipeline(provider: str | None = None) -> dict:
-    """Run the full system. Uses the CrewAI crew when an API key is configured, otherwise offline mode."""
+    """Run the full system. Uses the CrewAI crew when an API key is configured, otherwise offline mode.
+
+    If the live crew fails (rate limit, model without tool calling, ...) the error is printed and the
+    deterministic offline pipeline runs instead, so a result is always produced.
+    """
     settings = get_llm_settings(provider)
+    if settings.note:
+        print("[config]", settings.note)
     if settings.offline:
-        print("[mode] OFFLINE - no API key found; running deterministic RAG pipeline.")
+        print("[mode] OFFLINE - deterministic RAG pipeline (no LLM).")
         return run_offline()
     print(f"[mode] CrewAI multi-agent crew using {settings.model}")
-    crew = build_crew(build_llm(settings))
-    out = crew.kickoff()
+    try:
+        out = build_crew(build_llm(settings)).kickoff()
+    except Exception as exc:  # noqa: BLE001 - any LLM/provider failure should degrade gracefully
+        print(f"[warning] Live crew failed: {type(exc).__name__}: {str(exc)[:300]}")
+        print("[warning] Hint: the model may not support tool calling or you hit a rate limit "
+              "(try GEMINI_MODEL=gemini/gemini-2.0-flash). Falling back to offline mode.")
+        tools.CTX.alerts, tools.CTX.actions = [], []
+        return run_offline()
     return _save(str(out), []) | {"alerts": tools.CTX.alerts}

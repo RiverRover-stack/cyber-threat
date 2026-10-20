@@ -29,7 +29,7 @@ def load_env() -> None:
     try:  # Google Colab secrets
         from google.colab import userdata  # type: ignore
 
-        for var in (*KEY_VARS.values(), "LLM_PROVIDER"):
+        for var in (*KEY_VARS.values(), "LLM_PROVIDER", "GROQ_MODEL", "GEMINI_MODEL"):
             if not os.environ.get(var):
                 try:
                     os.environ[var] = userdata.get(var)
@@ -44,25 +44,83 @@ class LLMSettings:
     provider: str  # groq | gemini | offline
     model: str | None
     api_key: str | None
+    note: str = ""
 
     @property
     def offline(self) -> bool:
         return self.provider == "offline"
 
 
+def _normalise_model(provider: str, model: str) -> str:
+    """Turn 'google/gemma-x', 'models/gemma-x' or 'gemma-x' into the LiteLLM form 'gemini/gemma-x'."""
+    model = model.strip()
+    for prefix in ("models/", "google/", "gemini/", "groq/"):
+        if model.lower().startswith(prefix):
+            model = model[len(prefix):]
+    return f"{provider}/{model}"
+
+
+def _infer_provider(text: str) -> str | None:
+    t = text.lower()
+    if "gemma" in t or "gemini" in t or t.startswith("google/"):
+        return "gemini"
+    if t.startswith("groq/") or "llama" in t or "mixtral" in t:
+        return "groq"
+    return None
+
+
 def get_llm_settings(provider: str | None = None) -> LLMSettings:
-    """Resolve the LLM backend. Falls back to ``offline`` when no API key is found."""
+    """Resolve the LLM backend.
+
+    ``LLM_PROVIDER`` may be ``groq``, ``gemini``, ``offline`` or empty (auto: use whichever API key is set).
+    If it holds a model name (e.g. ``google/gemma-4-26B-A4B-it``) it is treated as the model ID.
+    Falls back to ``offline`` when no usable API key is found.
+    """
     load_env()
-    provider = (provider or os.environ.get("LLM_PROVIDER") or "groq").lower()
-    if provider == "offline":
-        return LLMSettings("offline", None, None)
-    if provider not in KEY_VARS:
-        raise ValueError(f"Unknown LLM_PROVIDER '{provider}' (use groq, gemini or offline)")
-    key = os.environ.get(KEY_VARS[provider])
+    raw = (provider or os.environ.get("LLM_PROVIDER") or "").strip()
+    low, model_override, note = raw.lower(), None, ""
+    if low == "offline":
+        return LLMSettings("offline", None, None, "LLM_PROVIDER=offline")
+    if low in KEY_VARS:
+        chosen = low
+    else:
+        chosen = None
+        if low not in ("", "auto"):  # a model name was supplied instead of a provider
+            model_override = raw
+            chosen = _infer_provider(raw)
+            note = f"LLM_PROVIDER='{raw}' is not a provider; treating it as the model ID. "
+        if chosen is None:  # auto-detect from whichever key exists
+            chosen = next((p for p, var in KEY_VARS.items() if os.environ.get(var)), "groq")
+    key = os.environ.get(KEY_VARS[chosen])
     if not key:
-        return LLMSettings("offline", None, None)
-    model = os.environ.get(f"{provider.upper()}_MODEL", DEFAULT_MODELS[provider])
-    return LLMSettings(provider, model, key)
+        other = next((p for p, var in KEY_VARS.items() if os.environ.get(var)), None)
+        hint = f" (a {KEY_VARS[other]} exists - set LLM_PROVIDER={other})" if other else ""
+        missing = f"No {KEY_VARS[chosen]} found{hint}" if other else "No GEMINI_API_KEY or GROQ_API_KEY found"
+        return LLMSettings("offline", None, None, f"{note}{missing}; running offline.")
+    model = model_override or os.environ.get(f"{chosen.upper()}_MODEL") or DEFAULT_MODELS[chosen]
+    return LLMSettings(chosen, _normalise_model(chosen, model), key, note.strip())
+
+
+def list_gemini_models(api_key: str | None = None) -> list[str]:
+    """IDs of models your Gemini/AI Studio key can call with generateContent (copy one into GEMINI_MODEL)."""
+    import json
+    import urllib.request
+
+    load_env()
+    api_key = api_key or os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is not set")
+    names, token = [], ""
+    while True:
+        url = "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200" + (f"&pageToken={token}" if token else "")
+        req = urllib.request.Request(url, headers={"x-goog-api-key": api_key})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = json.load(r)
+        names += [m["name"].removeprefix("models/") for m in data.get("models", [])
+                  if "generateContent" in m.get("supportedGenerationMethods", [])]
+        token = data.get("nextPageToken", "")
+        if not token:
+            return sorted(names)
 
 
 def build_llm(settings: LLMSettings | None = None):

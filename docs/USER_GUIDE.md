@@ -8,10 +8,15 @@
 Without a key the system runs in **offline mode**.
 
 ## 2. Google Colab
-1. Open the notebook via the Colab badge in the README.
-2. Left sidebar -> **Secrets** (key icon) -> add `GROQ_API_KEY` (or `GEMINI_API_KEY`) and toggle *Notebook access* on.
-3. **Runtime -> Run all.** The first cell clones the repo and installs `requirements.txt` (about 2-3 minutes).
-   If Colab asks to restart the session after installing, restart and run all again.
+The notebook is self-contained: it installs its own dependencies and embeds all code and knowledge-base files.
+1. Upload `notebooks/Multi_Agent_Cyber_Threat_Detection.ipynb` (File -> Upload notebook), or open it from GitHub.
+2. Left sidebar -> **Secrets** (key icon) -> add `GEMINI_API_KEY` (or `GROQ_API_KEY`) and toggle *Notebook access* on.
+   The provider is auto-detected from the key; set a `LLM_PROVIDER` secret (`gemini`/`groq`/`offline`) only to force one.
+   `LLM_PROVIDER` must be a provider name, **not** a model name.
+3. Optional model choice: in the config cell set `os.environ["GEMINI_MODEL"] = "gemini/<model-id>"`. The notebook's
+   model-list cell prints the IDs your key can use (including Gemma models on AI Studio).
+4. **Runtime -> Run all** (installing takes about 2-3 minutes). If Colab asks to restart after installing, restart and run all again.
+5. Models without tool-calling support make the live crew fail; the notebook then prints the reason and falls back to offline mode.
 
 ## 3. Local Jupyter
 ```bash
@@ -38,7 +43,8 @@ Adjust thresholds in `detection.py`.
 ## 6. Troubleshooting
 | Symptom | Fix |
 |---|---|
-| "[mode] OFFLINE" although a key is set | Check the variable name, `LLM_PROVIDER`, and Colab *Notebook access* |
+| `[mode] OFFLINE` although a key is set | Check the secret name (`GEMINI_API_KEY`/`GROQ_API_KEY`) and that Colab *Notebook access* is on; the `Note:` line printed by the config cell says what was missing |
+| Live crew fails then falls back to offline | Read the printed `[warning]`; try `GEMINI_MODEL=gemini/gemini-2.0-flash` (some Gemma models lack tool calling) |
 | `429` / rate-limit errors | Lower `max_rpm` in `crew.build_crew`, or wait; free tiers have tight limits |
 | Embedder shows `hashing-tfidf` | `sentence-transformers` not installed or model download blocked; results still work, retrieval is slightly weaker |
 | Chroma errors after upgrading | Delete the `chroma_db/` folder |

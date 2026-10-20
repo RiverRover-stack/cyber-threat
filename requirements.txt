@@ -5,5 +5,7 @@ pandas>=2.0
 numpy>=1.26
 matplotlib>=3.7
 python-dotenv>=1.0
+litellm>=1.50            # needed by CrewAI for Groq
+google-genai>=1.0        # needed by CrewAI for Gemini/Gemma
 sentence-transformers>=2.7   # optional: better embeddings (falls back to TF-IDF hashing if unavailable)
 pytest>=8.0
