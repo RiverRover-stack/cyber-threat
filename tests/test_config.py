@@ -2,7 +2,7 @@ import pytest
 
 from cyberthreat import config, crew
 
-VARS = ["LLM_PROVIDER", "GROQ_API_KEY", "GEMINI_API_KEY", "GROQ_MODEL", "GEMINI_MODEL"]
+VARS = ["LLM_PROVIDER", "GROQ_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY", "GROQ_MODEL", "GEMINI_MODEL", "OPENROUTER_MODEL"]
 
 
 @pytest.fixture(autouse=True)
@@ -76,3 +76,27 @@ def test_kickoff_works_inside_running_event_loop():
         return crew._kickoff(FakeCrew())
 
     assert asyncio.run(main()) == "ok"
+
+
+def test_only_openrouter_key_autodetects(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+    s = config.get_llm_settings()
+    assert s.provider == "openrouter" and s.model == "openrouter/nvidia/nemotron-3.5-super-vl:free"
+
+
+def test_openrouter_model_override_keeps_vendor_prefix(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k"); monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+    monkeypatch.setenv("OPENROUTER_MODEL", "google/gemma-3-27b-it:free")
+    assert config.get_llm_settings().model == "openrouter/google/gemma-3-27b-it:free"
+
+
+def test_openrouter_model_name_as_provider(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k"); monkeypatch.setenv("LLM_PROVIDER", "nvidia/nemotron-3.5-super-vl:free")
+    s = config.get_llm_settings()
+    assert s.provider == "openrouter" and s.model == "openrouter/nvidia/nemotron-3.5-super-vl:free"
+
+
+def test_openrouter_llm_builds(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+    llm = config.build_llm()
+    assert llm is not None and "openrouter.ai" in str(llm.base_url)

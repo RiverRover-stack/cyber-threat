@@ -21,7 +21,7 @@ incident report.
 - **RAG knowledge base** in ChromaDB: MITRE ATT&CK techniques, CVE samples, IR playbooks (sentence-transformers embeddings,
   automatic TF-IDF fallback when the model cannot be downloaded).
 - **Four CrewAI agents** with custom tools: Log Analyst, Threat Intelligence Analyst, Incident Responder, Report Writer.
-- **Free LLMs**: Groq (`llama-3.3-70b-versatile`) or Google Gemini (`gemini-2.0-flash`) through CrewAI/LiteLLM.
+- **Free LLMs**: Google Gemini/Gemma (AI Studio), OpenRouter (`nvidia/nemotron-3.5-super-vl:free`) or Groq (`llama-3.3-70b-versatile`).
 - **Offline mode**: with no API key the same tools + RAG run deterministically, so the notebook always executes end-to-end.
 - **Safe by design**: response actions are *simulated* and restricted to an allow-list.
 - **Evaluation**: precision / recall / F1, per-attack recall, RAG hit-rate@k, plots.
@@ -47,8 +47,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 The notebook is **self-contained** (code and knowledge base are embedded; no repo clone needed).
 1. Upload `notebooks/Multi_Agent_Cyber_Threat_Detection.ipynb` to <https://colab.research.google.com> (File → Upload notebook),
    or use the **Open in Colab** badge if the repository is public.
-2. *(Optional, for the live LLM crew)* add a Colab secret `GEMINI_API_KEY` (free at <https://aistudio.google.com>) or
-   `GROQ_API_KEY` (free at <https://console.groq.com>) and switch on *Notebook access*. The provider is auto-detected.
+2. *(Optional, for the live LLM crew)* add a Colab secret `GEMINI_API_KEY` (free at <https://aistudio.google.com>),
+   `OPENROUTER_API_KEY` (<https://openrouter.ai/keys>) or `GROQ_API_KEY` (<https://console.groq.com>) and switch on
+   *Notebook access*. The provider is auto-detected.
 3. To use a specific model (e.g. Gemma), set `os.environ["GEMINI_MODEL"] = "gemini/<model-id>"` in the config cell; the
    notebook can list the model IDs your key supports.
 4. **Runtime → Run all.** Without a key (or if the live crew fails) the notebook runs in offline mode.
@@ -73,9 +74,9 @@ print(result["report"])
 ## Configuration
 | Variable | Purpose | Default |
 |---|---|---|
-| `LLM_PROVIDER` | `groq`, `gemini` or `offline` | unset = auto-detect from whichever API key exists; `offline` without a key |
-| `GROQ_API_KEY` / `GEMINI_API_KEY` | Free-tier API keys | – |
-| `GROQ_MODEL` / `GEMINI_MODEL` | Model override, `provider/<model-id>` (works for Gemma on AI Studio) | `groq/llama-3.3-70b-versatile` / `gemini/gemini-2.0-flash` |
+| `LLM_PROVIDER` | `groq`, `gemini`, `openrouter` or `offline` | unset = auto-detect from whichever API key exists; `offline` without a key |
+| `GROQ_API_KEY` / `GEMINI_API_KEY` / `OPENROUTER_API_KEY` | Free-tier API keys | – |
+| `GROQ_MODEL` / `GEMINI_MODEL` / `OPENROUTER_MODEL` | Model override (`<model-id>`, provider prefix optional) | `llama-3.3-70b-versatile` / `gemini-2.0-flash` / `nvidia/nemotron-3.5-super-vl:free` |
 
 Keys are read from the environment, a `.env` file, or Colab secrets. **Never commit keys** (`.env` is git-ignored).
 

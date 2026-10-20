@@ -147,7 +147,7 @@ def run_pipeline(provider: str | None = None) -> dict:
     except Exception as exc:  # noqa: BLE001 - any LLM/provider failure should degrade gracefully
         print(f"[warning] Live crew failed: {type(exc).__name__}: {str(exc)[:300]}")
         print("[warning] Hint: the model may not support tool calling or you hit a rate limit "
-              "(try GEMINI_MODEL=gemini/gemini-2.0-flash). Falling back to offline mode.")
+              "(try a model with tool calling, e.g. GEMINI_MODEL=gemini/gemini-2.0-flash). Falling back to offline mode.")
         tools.CTX.alerts, tools.CTX.actions = [], []
         return run_offline()
     return _save(str(out), []) | {"alerts": tools.CTX.alerts}

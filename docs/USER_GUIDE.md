@@ -5,6 +5,7 @@
 |---|---|---|
 | Groq | <https://console.groq.com> -> API Keys | `GROQ_API_KEY` |
 | Google Gemini | <https://aistudio.google.com> -> Get API key | `GEMINI_API_KEY` |
+| OpenRouter | <https://openrouter.ai/keys> | `OPENROUTER_API_KEY` |
 Without a key the system runs in **offline mode**.
 
 ## 2. Google Colab
@@ -13,10 +14,13 @@ The notebook is self-contained: it installs its own dependencies and embeds all 
 2. Left sidebar -> **Secrets** (key icon) -> add `GEMINI_API_KEY` (or `GROQ_API_KEY`) and toggle *Notebook access* on.
    The provider is auto-detected from the key; set a `LLM_PROVIDER` secret (`gemini`/`groq`/`offline`) only to force one.
    `LLM_PROVIDER` must be a provider name, **not** a model name.
-3. Optional model choice: in the config cell set `os.environ["GEMINI_MODEL"] = "gemini/<model-id>"`. The notebook's
+3. OpenRouter: add the `OPENROUTER_API_KEY` secret; the default model is `nvidia/nemotron-3.5-super-vl:free`. To change it set
+   `os.environ["OPENROUTER_MODEL"] = "<vendor>/<model>[:free]"`. Free models are rate limited (HTTP 429) and not all support tool
+   calling; if the crew fails the notebook falls back to offline mode and prints why.
+4. Optional Gemini model choice: in the config cell set `os.environ["GEMINI_MODEL"] = "gemini/<model-id>"`. The notebook's
    model-list cell prints the IDs your key can use (including Gemma models on AI Studio).
-4. **Runtime -> Run all** (installing takes about 2-3 minutes). If Colab asks to restart after installing, restart and run all again.
-5. Models without tool-calling support make the live crew fail; the notebook then prints the reason and falls back to offline mode.
+5. **Runtime -> Run all** (installing takes about 2-3 minutes). If Colab asks to restart after installing, restart and run all again.
+6. Models without tool-calling support make the live crew fail; the notebook then prints the reason and falls back to offline mode.
 
 ## 3. Local Jupyter
 ```bash

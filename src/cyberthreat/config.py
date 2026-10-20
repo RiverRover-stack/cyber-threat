@@ -14,8 +14,9 @@ SEED = 42
 DEFAULT_MODELS = {
     "groq": "groq/llama-3.3-70b-versatile",
     "gemini": "gemini/gemini-2.0-flash",
+    "openrouter": "openrouter/nvidia/nemotron-3.5-super-vl:free",
 }
-KEY_VARS = {"groq": "GROQ_API_KEY", "gemini": "GEMINI_API_KEY"}
+KEY_VARS = {"groq": "GROQ_API_KEY", "gemini": "GEMINI_API_KEY", "openrouter": "OPENROUTER_API_KEY"}
 
 
 def load_env() -> None:
@@ -29,7 +30,7 @@ def load_env() -> None:
     try:  # Google Colab secrets
         from google.colab import userdata  # type: ignore
 
-        for var in (*KEY_VARS.values(), "LLM_PROVIDER", "GROQ_MODEL", "GEMINI_MODEL"):
+        for var in (*KEY_VARS.values(), "LLM_PROVIDER", *(f"{p.upper()}_MODEL" for p in KEY_VARS)):
             if not os.environ.get(var):
                 try:
                     os.environ[var] = userdata.get(var)
@@ -52,9 +53,13 @@ class LLMSettings:
 
 
 def _normalise_model(provider: str, model: str) -> str:
-    """Turn 'google/gemma-x', 'models/gemma-x' or 'gemma-x' into the LiteLLM form 'gemini/gemma-x'."""
+    """Return the LiteLLM/CrewAI form ``<provider>/<model-id>``.
+
+    Strips only prefixes that belong to the provider, so OpenRouter ids such as ``google/gemma-...`` stay intact.
+    """
     model = model.strip()
-    for prefix in ("models/", "google/", "gemini/", "groq/"):
+    prefixes = {"gemini": ("gemini/", "models/", "google/"), "groq": ("groq/",), "openrouter": ("openrouter/",)}
+    for prefix in prefixes[provider]:
         if model.lower().startswith(prefix):
             model = model[len(prefix):]
     return f"{provider}/{model}"
@@ -62,6 +67,8 @@ def _normalise_model(provider: str, model: str) -> str:
 
 def _infer_provider(text: str) -> str | None:
     t = text.lower()
+    if t.startswith("openrouter/") or t.endswith(":free") or t.startswith("nvidia/"):
+        return "openrouter"
     if "gemma" in t or "gemini" in t or t.startswith("google/"):
         return "gemini"
     if t.startswith("groq/") or "llama" in t or "mixtral" in t:
@@ -72,7 +79,7 @@ def _infer_provider(text: str) -> str | None:
 def get_llm_settings(provider: str | None = None) -> LLMSettings:
     """Resolve the LLM backend.
 
-    ``LLM_PROVIDER`` may be ``groq``, ``gemini``, ``offline`` or empty (auto: use whichever API key is set).
+    ``LLM_PROVIDER`` may be ``groq``, ``gemini``, ``openrouter``, ``offline`` or empty (auto: use whichever API key is set).
     If it holds a model name (e.g. ``google/gemma-4-26B-A4B-it``) it is treated as the model ID.
     Falls back to ``offline`` when no usable API key is found.
     """
@@ -95,7 +102,7 @@ def get_llm_settings(provider: str | None = None) -> LLMSettings:
     if not key:
         other = next((p for p, var in KEY_VARS.items() if os.environ.get(var)), None)
         hint = f" (a {KEY_VARS[other]} exists - set LLM_PROVIDER={other})" if other else ""
-        missing = f"No {KEY_VARS[chosen]} found{hint}" if other else "No GEMINI_API_KEY or GROQ_API_KEY found"
+        missing = f"No {KEY_VARS[chosen]} found{hint}" if other else "No GEMINI_API_KEY, GROQ_API_KEY or OPENROUTER_API_KEY found"
         return LLMSettings("offline", None, None, f"{note}{missing}; running offline.")
     model = model_override or os.environ.get(f"{chosen.upper()}_MODEL") or DEFAULT_MODELS[chosen]
     return LLMSettings(chosen, _normalise_model(chosen, model), key, note.strip())

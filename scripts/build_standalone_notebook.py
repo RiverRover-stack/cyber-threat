@@ -56,7 +56,7 @@ Pipeline:
 4. Run a **CrewAI** crew: Log Analyst -> Threat-Intel Analyst -> Incident Responder -> Report Writer
 5. Evaluate detection and retrieval quality and produce an incident report
 
-**LLM:** add a free `GEMINI_API_KEY` (Google AI Studio) or `GROQ_API_KEY` as a Colab secret (key icon, switch on *Notebook access*).
+**LLM:** add a free `GEMINI_API_KEY` (Google AI Studio), `OPENROUTER_API_KEY` or `GROQ_API_KEY` as a Colab secret (key icon, switch on *Notebook access*).
 With no key the notebook runs in **offline mode** (same tools and RAG, deterministic logic).
 Source of truth: the `src/cyberthreat` package in the GitHub repo; this notebook is generated from it.
 """),
@@ -97,14 +97,18 @@ code(inline("evaluation")),
 md("---\n# Run the system"),
 md("""
 ## 11. Choose the LLM
-Add `GEMINI_API_KEY` (or `GROQ_API_KEY`) as a Colab secret with **Notebook access** on. Optional overrides (uncomment):
+Add `GEMINI_API_KEY`, `OPENROUTER_API_KEY` or `GROQ_API_KEY` as a Colab secret with **Notebook access** on. Optional overrides (uncomment):
 
-- `LLM_PROVIDER` = `gemini`, `groq` or `offline` (leave unset to auto-detect from the key)
-- `GEMINI_MODEL` = `gemini/<model-id>` - run the model-list cell below to see valid IDs for your key (e.g. a Gemma model)
+- `LLM_PROVIDER` = `gemini`, `openrouter`, `groq` or `offline` (leave unset to auto-detect from the key)
+- `OPENROUTER_MODEL` = e.g. `nvidia/nemotron-3.5-super-vl:free` (the default for OpenRouter)
+- `GEMINI_MODEL` = `gemini/<model-id>` - run the model-list cell below to see valid IDs for your key
 """),
 code("""
 # os.environ["LLM_PROVIDER"] = "gemini"
 # os.environ["GEMINI_MODEL"] = "gemini/<model-id>"      # e.g. a Gemma model id from the list below
+# --- OpenRouter (add a Colab secret OPENROUTER_API_KEY):
+# os.environ["LLM_PROVIDER"] = "openrouter"
+# os.environ["OPENROUTER_MODEL"] = "nvidia/nemotron-3.5-super-vl:free"
 
 settings = get_llm_settings()
 if settings.note:
@@ -177,7 +181,7 @@ md("""
 
 - Every injected incident is detected and typed correctly and mapped to the right ATT&CK technique via RAG.
 - Responses are derived from retrieved **playbooks** and restricted to a simulated allow-list.
-- The same tools run under a live CrewAI crew (Gemini / Gemma / Groq) when an API key is available; if the live crew fails
+- The same tools run under a live CrewAI crew (Gemini / Gemma / OpenRouter / Groq) when an API key is available; if the live crew fails
   the notebook falls back to offline mode and says why.
 
 *Limitations:* synthetic data with tuned thresholds, small knowledge base, simulated actions. See the repo's `docs/`.
